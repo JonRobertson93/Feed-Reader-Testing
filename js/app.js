@@ -1,134 +1,93 @@
-/* app.js
- *
- * This is our RSS feed reader application. It uses the Google
- * Feed Reader API to grab RSS feeds as JSON object we can make
- * use of. It also uses the Handlebars templating library and
- * jQuery.
- */
+/* feedreader.js
+ * This is the spec file that Jasmine will read and contains all of the tests that will be run against your application. */
 
-// The names and URLs to all of the feeds we'd like available.
-var allFeeds = [
-    {
-        name: 'Udacity Blog',
-        url: 'http://blog.udacity.com/feed'
-    }, {
-        name: 'CSS Tricks',
-        url: 'http://feeds.feedburner.com/CssTricks'
-    }, {
-        name: 'HTML5 Rocks',
-        url: 'http://feeds.feedburner.com/html5rocks'
-    }, {
-        name: 'Linear Digressions',
-        url: 'http://feeds.feedburner.com/udacity-linear-digressions'
-    }
-];
+/* We're placing all of our tests within the $() function, since some of these tests may require DOM elements. 
+ * We want to ensure they don't run until the DOM is ready. */
 
-/* This function starts up our application. The Google Feed
- * Reader API is loaded asynchonously and will then call this
- * function when the API is loaded.
- */
-function init() {
-    // Load the first feed we've defined (index of 0).
-    loadFeed(0);
-}
-
-/* This function performs everything necessary to load a
- * feed using the Google Feed Reader API. It will then
- * perform all of the DOM operations required to display
- * feed entries on the page. Feeds are referenced by their
- * index position within the allFeeds array.
- * This function all supports a callback as the second parameter
- * which will be called after everything has run successfully.
- */
- function loadFeed(id, cb) {
-     var feedUrl = allFeeds[id].url,
-         feedName = allFeeds[id].name;
-
-     $.ajax({
-       type: "POST",
-       url: 'https://rsstojson.udacity.com/parseFeed',
-       data: JSON.stringify({url: feedUrl}),
-       contentType:"application/json",
-       success: function (result, status){
-
-                 var container = $('.feed'),
-                     title = $('.header-title'),
-                     entries = result.feed.entries,
-                     entriesLen = entries.length,
-                     entryTemplate = Handlebars.compile($('.tpl-entry').html());
-
-                 title.html(feedName);   // Set the header text
-                 container.empty();      // Empty out all previous entries
-
-                 /* Loop through the entries we just loaded via the Google
-                  * Feed Reader API. We'll then parse that entry against the
-                  * entryTemplate (created above using Handlebars) and append
-                  * the resulting HTML to the list of entries on the page.
-                  */
-                 entries.forEach(function(entry) {
-                     container.append(entryTemplate(entry));
-                 });
-
-                 if (cb) {
-                     cb();
-                 }
-               },
-       error: function (result, status, err){
-                 //run only the callback without attempting to parse result due to error
-                 if (cb) {
-                     cb();
-                 }
-               },
-       dataType: "json"
-     });
- }
-
-/* Google API: Loads the Feed Reader API and defines what function
- * to call when the Feed Reader API is done loading.
- */
-google.setOnLoadCallback(init);
-
-/* All of this functionality is heavily reliant upon the DOM, so we
- * place our code in the $() function to ensure it doesn't execute
- * until the DOM is ready.
- */
 $(function() {
-    var container = $('.feed'),
-        feedList = $('.feed-list'),
-        feedItemTemplate = Handlebars.compile($('.tpl-feed-list-item').html()),
-        feedId = 0,
-        menuIcon = $('.menu-icon-link');
 
-    /* Loop through all of our feeds, assigning an id property to
-     * each of the feeds based upon its index within the array.
-     * Then parse that feed against the feedItemTemplate (created
-     * above using Handlebars) and append it to the list of all
-     * available feeds within the menu.
-     */
-     
-    allFeeds.forEach(function(feed) {
-        feed.id = feedId;
-        feedList.append(feedItemTemplate(feed));
+    /* This is our first test suite - a test suite just contains a related set of tests. 
+    * This suite is all about the RSS feeds definitions, the allFeeds variable in our application. */
+    describe('RSS Feeds', () =>  {
 
-        feedId++;
+        /* This is our first test - it tests to make sure that the allFeeds variable has been defined and that it is not empty. */
+        it('are defined', () =>  {
+            expect(allFeeds).toBeDefined();
+            expect(allFeeds.length).not.toBe(0);
+        });
+
+        /* Test to see if each feed has a URL and URL has content. */
+        it('have defined URLs', function() {
+            allFeeds.forEach(feed => {  // Pass in feed as argument in the forEach function
+                expect(feed.url).toBeTruthy(); 
+            });
+         });
+
+        // Test to see if each feed has a name and name has content
+        it('have defined names', () => {
+            allFeeds.forEach(feed => {
+                let name = feed.name;
+                expect(name).toBeDefined();
+                expect(name.length).not.toBe(0); 
+            });
+         });
     });
 
-    /* When a link in our feedList is clicked on, we want to hide
-     * the menu, load the feed, and prevent the default action
-     * (following the link) from occurring.
-     */
-    feedList.on('click', 'a', function() {
-        var item = $(this);
 
-        $('body').addClass('menu-hidden');
-        loadFeed(item.data('id'));
-        return false;
+    // New test suite named "The menu"
+    describe('The Menu', () =>  {
+
+        // Makes sure menu item (html element 'body') is hidden by default.
+        it('is hidden by default', () =>  {
+            let menu = document.querySelector('body');
+            expect(menu.classList.contains("menu-hidden")).toBe(true);
+        });
+        
+        // Test if menu changes visibility when clicked -- hidden by default until clicked once
+        it('changes when clicked', () => {
+            let menuIcon = document.querySelector('.menu-icon-link');   // Sets menuIcon variable
+            let menu = document.querySelector('body');                  // Sets body variable
+            menuIcon.click();                                           // Simulate click on menuIcon using click()
+            expect(menu.classList.contains("menu-hidden")).toBe(false); // First click will show menu
+            menuIcon.click();                                           // Simulate click on menuIcon using click()
+            expect(menu.classList.contains("menu-hidden")).toBe(true);  // Second click will hide menu
+            });
+     });
+
+    // Test - after the loadFeed function runs, there is at least 1 entry loaded into the feed list/container
+    describe('Initial Entries', () => {
+        beforeEach(done => {        // This will run before the it check
+            loadFeed(0, () => {
+                allFeeds = document.querySelectorAll('.feed .entry');   //Checks for entries in the feed container
+                done();
+            });
+        });
+
+        it ('loads at least 1 feed initially', (done) => {
+            expect(allFeeds.length).toBeGreaterThan(0);     // Expect feed list/container to be greater than 0
+            done();
+         });
     });
 
-    /* When the menu icon is clicked on, we need to toggle a class
-     * on the body to perform the hiding/showing of our menu.
-     */
-    menuIcon.on('click', function() {
-        $('body').toggleClass('menu-hidden');
+
+    describe('New Feed Selection', () => {
+        // Test that ensures when a new feed is loaded by loadFeed() that the content actually changes.
+        let firstFeed;
+        let secondFeed;
+        beforeEach(done => {
+            loadFeed(1, () => {     //Load feed at index 1
+                firstFeed = document.querySelectorAll('.feed .entry')[0];    // Set firstFeed feed list index 0
+                loadFeed(2, () => {     // Load feed at index 2
+                    secondFeed = document.querySelectorAll('.feed .entry')[1];   // Set secondFeed to feed list index 1
+                    done();
+                });
+            });            
+        });
+
+        it('loads new feeds', (done) => {
+            expect(firstFeed !== secondFeed).toBe(true);    // Feeds are not identical (same feed or empty)
+            done();
+        });
     });
+
 }());
