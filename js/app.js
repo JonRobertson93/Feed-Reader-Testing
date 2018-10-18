@@ -56,7 +56,7 @@ $(function() {
 
     // Test - after the loadFeed function runs, there is at least 1 entry loaded into the feed list/container
     describe('Initial Entries', () => {
-        beforeEach(done => {        // This will run before the it check
+        beforeEach(done => {            // This will run before the it check
             loadFeed(0, () => {
                 allFeeds = document.querySelectorAll('.feed .entry');   //Checks for entries in the feed container
                 done();
