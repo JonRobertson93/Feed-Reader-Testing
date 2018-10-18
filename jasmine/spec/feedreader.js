@@ -19,9 +19,7 @@ $(function() {
         /* Test to see if each feed has a URL and URL has content. */
         it('have defined URLs', function() {
             allFeeds.forEach(feed => {  // Pass in feed as argument in the forEach function
-                let url = feed.url;   
-                expect(url).toBeDefined();
-                expect(url.length).not.toBe(0); 
+                expect(feed.url).toBeTruthy(); 
             });
          });
 
@@ -56,19 +54,17 @@ $(function() {
             });
      });
 
-    // Test - after the loadFeed function runs, there is at least 1 entry loaded into the feed list.
+    // Test - after the loadFeed function runs, there is at least 1 entry loaded into the feed list/container
     describe('Initial Entries', () => {
-
-        let initialEntry;           //define variable to use
         beforeEach(done => {        // This will run before the it check
-            loadFeed(0, () => {     // Load first feed in the list
-                initialEntry = document.querySelector('.entry-link').innerHTML; // Feed's inner HTML
+            loadFeed(0, () => {
+                allFeeds = document.querySelectorAll('.feed .entry');   //Checks for entries in the feed container
                 done();
             });
         });
 
         it ('loads at least 1 feed initially', (done) => {
-            expect(initialEntry).toBeDefined(true);     // Expect innerHTML to have content
+            expect(allFeeds.length).toBeGreaterThan(0);     // Expect feed list/container to be greater than 0
             done();
          });
     });
@@ -80,16 +76,16 @@ $(function() {
         let secondFeed;
         beforeEach(done => {
             loadFeed(1, () => {     //Load feed at index 1
-                firstFeed = document.querySelector('.entry-link').innerHTML;    // Set firstFeed to innerHTML of feed
+                firstFeed = document.querySelectorAll('.feed .entry')[0];    // Set firstFeed feed list index 0
                 loadFeed(2, () => {     // Load feed at index 2
-                    secondFeed = document.querySelector('.entry-link').innerHTML;   // Set secondFeed to innerHTML of feed
-                    done(); 
+                    secondFeed = document.querySelectorAll('.feed .entry')[1];   // Set secondFeed to feed list index 1
+                    done();
                 });
             });            
         });
 
         it('loads new feeds', (done) => {
-            expect(firstFeed !== secondFeed).toBe(true);    // HTML is not identical, indicating seperate entries
+            expect(firstFeed !== secondFeed).toBe(true);    // Feeds are not identical (same feed or empty)
             done();
         });
     });
