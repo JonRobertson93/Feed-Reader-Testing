@@ -63,7 +63,7 @@ $(function() {
             });
         });
 
-        it ('loads at least 1 feed initially', (done) => {
+        it ('loads at least 1 feed initially', () => {
             expect(allFeeds.length).toBeGreaterThan(0);     // Expect feed list/container to be greater than 0
             done();
          });
@@ -78,15 +78,14 @@ $(function() {
             loadFeed(1, () => {     //Load feed at index 1
                 firstFeed = document.querySelectorAll('.feed .entry')[0];    // Set firstFeed feed list index 0
                 loadFeed(2, () => {     // Load feed at index 2
-                    secondFeed = document.querySelectorAll('.feed .entry')[1];   // Set secondFeed to feed list index 1
+                    secondFeed = document.querySelectorAll('.feed .entry')[0];   // Set secondFeed to feed list index 1
                     done();
                 });
             });            
         });
 
-        it('loads new feeds', (done) => {
+        it('loads new feeds', () => {
             expect(firstFeed !== secondFeed).toBe(true);    // Feeds are not identical (same feed or empty)
-            done();
         });
     });
 
